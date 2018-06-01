@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Context Menu on DataGrid - jQuery EasyUI Demo</title>
+	<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="../demo.css">
+	<script type="text/javascript" src="../../jquery.min.js"></script>
+	<script type="text/javascript" src="../../jquery.easyui.min.js"></script>
+</head>
+<body>
+	<h2>Context Menu on DataGrid</h2>
+	<p>Right click on the header of DataGrid to display context menu.</p>
+	<div style="margin:20px 0;"></div>
+	<table id="dg"></table>
+	<script type="text/javascript">
+		$(function(){
+			$('#dg').datagrid({
+				url: 'datagrid_data1.json',
+				method: 'get',
+				title: 'Context Menu on DataGrid',
+				iconCls: 'icon-save',
+				width: 700,
+				height: 250,
+				fitColumns: true,
+				singleSelect: true,
+				columns:[[
+					{field:'itemid',title:'Item ID',width:80},
+					{field:'productid',title:'Product ID',width:120},
+					{field:'listprice',title:'List Price',width:80,align:'right'},
+					{field:'unitcost',title:'Unit Cost',width:80,align:'right'},
+					{field:'attr1',title:'Attribute',width:250},
+					{field:'status',title:'Status',width:60,align:'center'}
+				]],
+				onHeaderContextMenu: function(e, field){
+					e.preventDefault();
+					if (!cmenu){
+						createColumnMenu();
+					}
+					cmenu.menu('show', {
+						left:e.pageX,
+						top:e.pageY
+					});
+				}
+			});
+		});
+		var cmenu;
+		function createColumnMenu(){
+			cmenu = $('<div/>').appendTo('body');
+			cmenu.menu({
+				onClick: function(item){
+					if (item.iconCls == 'icon-ok'){
+						$('#dg').datagrid('hideColumn', item.name);
+						cmenu.menu('setIcon', {
+							target: item.target,
+							iconCls: 'icon-empty'
+						});
+					} else {
+						$('#dg').datagrid('showColumn', item.name);
+						cmenu.menu('setIcon', {
+							target: item.target,
+							iconCls: 'icon-ok'
+						});
+					}
+				}
+			});
+			var fields = $('#dg').datagrid('getColumnFields');
+			for(var i=0; i<fields.length; i++){
+				var field = fields[i];
+				var col = $('#dg').datagrid('getColumnOption', field);
+				cmenu.menu('appendItem', {
+					text: col.title,
+					name: field,
+					iconCls: 'icon-ok'
+				});
+			}
+		}
+		
+		
+	    var dataJson = {};
+	    var l1 = 0,
+	        l2 = 0;
+	    var cname1, cname2, cname3;
+	    var cid1, cid2, cid3;
+	    var canClick = !0;
+	    var canClose = !1;
+	    $('.select-box').css({
+	        left: $('.select-res').offset().left,
+	        top: $('.select-res').offset().top + $('.select-res').outerHeight(true)
+	    });
+	    $('span', $('.select-res')).on('click', function() {
+	        $('.select-box').show();
+	        if (canClick) {
+	            $('ul', $('.select-box')).html('');
+	            fillData();
+	            canClick = !1;
+	        }
+	    });
+	    $('span', $('.select-box')).on("click", function() {
+	        canClose ? $('.select-box').hide() : alert('请选择下级品类！');
+	        canClick = !0;
+	    });
+
+	    $('.select-res').on('click', 'a', function() {
+	        $(this).parent().remove();
+	        $('.select-box').css({
+	            top: $('.select-res').offset().top + $('.select-res').outerHeight(true)
+	        });
+	    })
+
+	    $('ul.first', $('.select-box')).on('click', 'li', function() {
+	        $(this).addClass('selected').siblings().removeClass('selected');
+	        $('ul.third').html('');
+	        fillData($(this).index());
+	        l1 = $(this).index();
+	        cname1 = $(this).text();
+	        cid1 = $(this).attr('val');
+	        canClose = !1;
+	        $('input.cid', $('.select-res')).val(cid1);
+	        $('input.cname', $('.select-res')).val(cname1);
+	    });
+	    $('ul.second', $('.select-box')).on('click', 'li', function() {
+	        $(this).addClass('selected').siblings().removeClass('selected');
+	        fillData(l1, $(this).index());
+	        l2 = $(this).index();
+	        cname2 = $(this).text();
+	        cid2 = $(this).attr('val');
+	        canClose = !1;
+	        $('input.cid', $('.select-res')).val(cid1 + ',' + cid2);
+	        $('input.cname', $('.select-res')).val(cname1 + ',' + cname2);
+	    });
+	    $('ul.third', $('.select-box')).on('click', 'li', function() {
+	        $(this).addClass('selected').siblings().removeClass('selected');
+	        cname3 = $(this).text();
+	        cid3 = $(this).attr('val');
+	        canClose = !0;
+	        var hasExist = !1;
+	        $('.select-res').find("p").each(function() {
+	            if ($(this).text().split(' > ')[2] == cname3) hasExist = !0;
+	        })
+	        hasExist ? alert('所选品类已被添加！') : $('.select-res').append('<p>' + cname1 + ' > ' + cname2 + ' > ' + cname3 + '<a></a><input type="hidden" value="' + cid1 + ',' + cid2 + ',' + cid3 + '" name="cid[]" /><input type="hidden" value="' + cname1 + ',' + cname2 + ',' + cname3 + '" name="cname[]" /></p>');
+	        $('.select-box').css({
+	            top: $('.select-res').offset().top + $('.select-res').outerHeight(true)
+	        });
+	        $('input.cid', $('.select-res')).val(cid1 + ',' + cid2 + ',' + cid3);
+	        $('input.cname', $('.select-res')).val(cname1 + ',' + cname2 + ',' + cname3);
+	    });
+
+	    //填充级联数据
+
+	    function fillData(l1, l2) {
+	        var temp_html = "";
+	        if (typeof(dataJson.option) != 'undefined' && arguments.length == 0) {
+	            $.each(dataJson.option, function(i, pro) {
+	                temp_html += '<li val="' + pro.id + '">' + pro.name + '</li>';
+	            });
+	        } else if (typeof(dataJson.option[l1].child) != 'undefined' && arguments.length == 1) {
+	            $.each(dataJson.option[l1].child, function(i, pro) {
+	                temp_html += '<li val="' + pro.id + '">' + pro.name + '</li>';
+	            });
+	        } else if (typeof(dataJson.option[l1].child[l2].child) != 'undefined' && arguments.length == 2) {
+	            $.each(dataJson.option[l1].child[l2].child, function(i, pro) {
+	                temp_html += '<li val="' + pro.id + '">' + pro.name + '</li>';
+	            });
+	        }
+	        $('.select-box ul:eq(' + arguments.length + ')').html(temp_html);
+	    }
+	</script>
+</body>
+</html>

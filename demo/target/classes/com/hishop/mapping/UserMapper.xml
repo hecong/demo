@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+<mapper namespace="com.hishop.dao.IUserDao">  
+    <select id="selectByPrimaryKey" parameterType="Integer" resultMap="UserResult">  
+        select * from user_t where id=#{userId}  
+    </select>  
+      
+      
+    <resultMap type="com.hishop.entity.User" id="UserResult">  
+        <id property="id" column="id"/>  
+        <result property="userName" column="user_name"/>
+        <result property="password" column="password"/>
+        <result property="age" column="age"/>  
+    </resultMap>  
+</mapper>  
